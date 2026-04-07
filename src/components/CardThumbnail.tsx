@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { type Card, db } from '../db/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { CreditCard, CalendarDays, AlertCircle, Zap } from 'lucide-react';
+import { getCardMetrics } from '../services/card.service';
 
 import sbiLogo from '../assets/banks/sbi.svg';
 import iciciLogo from '../assets/banks/icici.png';
@@ -42,50 +43,18 @@ export default function CardThumbnail({ card }: { card: Card }) {
   // Fallbacks while loading
   if (!expenses || !payments) return <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse aspect-[1.586/1]"></div>;
 
-  const today = new Date();
-  
-  // Calculate next and last billing dates
-  let nextBillDate = new Date(today.getFullYear(), today.getMonth(), card.billingDate);
-  let lastBillDate = new Date(today.getFullYear(), today.getMonth(), card.billingDate);
+  const metrics = getCardMetrics(card, expenses, payments);
+  const { amountToPayNext, availableLimit, nextBillDate, nextPayDate, amcMessageText, isAmcWaived } = metrics;
 
-  if (today > nextBillDate) {
-    nextBillDate.setMonth(nextBillDate.getMonth() + 1);
-  } else {
-    lastBillDate.setMonth(lastBillDate.getMonth() - 1);
-  }
-
-  let nextPayDate = new Date(today.getFullYear(), today.getMonth(), card.paymentDate);
-  if (today > nextPayDate || nextPayDate <= nextBillDate) {
-    nextPayDate.setMonth(nextPayDate.getMonth() + 1);
-  }
-
-  const totalSpent = expenses.reduce((sum: number, exp) => sum + exp.amount, 0);
-
-  // Calculate amount to pay based on expenses in the current billing cycle
-  const currentCycleExpenses = expenses.filter(exp => {
-    const expDate = new Date(exp.date);
-    return expDate >= lastBillDate && expDate < nextBillDate;
-  });
-  
-  const amountToPayNext = currentCycleExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  
-  const totalPaid = payments.reduce((sum: number, p) => sum + p.amount, 0);
-  const availableLimit = Math.max(0, card.totalLimit - totalSpent + totalPaid);
-
-  // AMC Waiver logic
-  let amcMessageText = null;
   let amcColorClass = "";
   let AmcIcon = null;
-  if (card.amc > 0 && card.waiveOffLimit > 0) {
-    const remainingToWaive = Math.max(0, card.waiveOffLimit - totalSpent);
-    if (remainingToWaive > 0) {
-      amcMessageText = `Spend ₹${remainingToWaive} more to waive AMC`;
-      amcColorClass = "text-red-400";
-      AmcIcon = AlertCircle;
-    } else {
-      amcMessageText = "AMC Waived! 🎉";
+  if (amcMessageText) {
+    if (isAmcWaived) {
       amcColorClass = "text-emerald-400";
       AmcIcon = Zap;
+    } else {
+      amcColorClass = "text-red-400";
+      AmcIcon = AlertCircle;
     }
   }
 
