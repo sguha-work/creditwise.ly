@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { type Card, db } from '../db/db';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { CreditCard, CalendarDays, Zap, AlertCircle } from 'lucide-react';
+import { CreditCard, CalendarDays, AlertCircle, Zap } from 'lucide-react';
 
 import sbiLogo from '../assets/banks/sbi.svg';
 import iciciLogo from '../assets/banks/icici.png';
@@ -27,6 +28,8 @@ function getBankLogo(title: string) {
 }
 
 export default function CardThumbnail({ card }: { card: Card }) {
+  const [isFlipped, setIsFlipped] = useState(false);
+
   // Fetch expenses to determine AMC condition and current limits dynamically
   const expenses = useLiveQuery(() => 
     db.expenses.where('cardId').equals(card.id!).toArray()
@@ -37,19 +40,13 @@ export default function CardThumbnail({ card }: { card: Card }) {
   );
 
   // Fallbacks while loading
-  if (!expenses || !payments) return <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse h-48"></div>;
+  if (!expenses || !payments) return <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse aspect-[1.586/1]"></div>;
 
-  // Calculate total spent since the beginning of the AMC year (simplified to all-time for now, or we can just use all expenses to see if they crossed the limit)
   const totalSpent = expenses.reduce((sum: number, exp) => sum + exp.amount, 0);
   
-  // Actually, currentBalance can be computed as:
-  // Math.max(0, initial_currentBalance + totalSpent - totalPaid)
-  // Let's rely on the DB's `currentBalance` value directly because 
-  // AddExpenseModal and AddPaymentModal already mutate it!
   const amountToPayNext = card.currentBalance;
   const availableLimit = Math.max(0, card.totalLimit - card.currentBalance);
 
-  // Date Math for Next Bill Generate Date and Pay Date
   const today = new Date();
   
   let nextBillDate = new Date(today.getFullYear(), today.getMonth(), card.billingDate);
@@ -59,81 +56,108 @@ export default function CardThumbnail({ card }: { card: Card }) {
 
   let nextPayDate = new Date(today.getFullYear(), today.getMonth(), card.paymentDate);
   if (today > nextPayDate || nextPayDate <= nextBillDate) {
-    // Usually payment date is ~20 days after bill, so it might be next month
     nextPayDate.setMonth(nextPayDate.getMonth() + 1);
   }
 
   // AMC Waiver logic
-  let amcMessage = null;
+  let amcMessageText = null;
+  let amcColorClass = "";
+  let AmcIcon = null;
   if (card.amc > 0 && card.waiveOffLimit > 0) {
     const remainingToWaive = Math.max(0, card.waiveOffLimit - totalSpent);
     if (remainingToWaive > 0) {
-      amcMessage = <div className="mt-4 p-3 bg-red-950/30 border border-red-900/50 rounded-lg flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-        <div className="text-sm text-red-200">
-          <span className="font-semibold text-red-400">AMC Alert:</span> Spend ₹{remainingToWaive} more to waive off ₹{card.amc} AMC.
-        </div>
-      </div>;
+      amcMessageText = `Spend ₹${remainingToWaive} more to waive AMC`;
+      amcColorClass = "text-red-400";
+      AmcIcon = AlertCircle;
     } else {
-      amcMessage = <div className="mt-4 p-3 bg-emerald-950/30 border border-emerald-900/50 rounded-lg flex items-center gap-3">
-        <Zap className="w-5 h-5 text-emerald-500" />
-        <span className="text-sm text-emerald-400 font-medium">AMC Waived! 🎉</span>
-      </div>;
+      amcMessageText = "AMC Waived! 🎉";
+      amcColorClass = "text-emerald-400";
+      AmcIcon = Zap;
     }
   }
 
   const logo = getBankLogo(card.title);
 
   return (
-    <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl flex flex-col hover:border-slate-700 transition-colors relative overflow-hidden group">
-      {/* Decorative Glow */}
-      <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+    <div className="w-full aspect-[1.586/1] [perspective:1000px] cursor-pointer group" onClick={() => setIsFlipped(!isFlipped)}>
+      <div 
+        className={`w-full h-full transition-transform duration-700 [transform-style:preserve-3d] relative ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}
+      >
+        {/* FRONT SIDE */}
+        <div className="absolute inset-0 w-full h-full p-5 md:p-6 bg-gradient-to-tr from-slate-900/80 via-slate-800/60 to-slate-800/80 backdrop-blur-xl border border-white/10 rounded-[1.25rem] shadow-2xl flex flex-col justify-between hover:border-white/20 transition-colors overflow-hidden [backface-visibility:hidden]">
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl group-hover:bg-blue-400/30 transition-all pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="flex items-center gap-4 mb-6 relative">
-        <div className="p-3 bg-slate-800 rounded-xl flex items-center justify-center min-w-[3rem] min-h-[3rem]">
-          {logo ? (
-            <img src={logo} alt={`${card.title} logo`} className="w-8 object-contain" />
-          ) : (
-            <CreditCard className="w-6 h-6 text-blue-400" />
-          )}
+          <div className="flex justify-between items-start mb-4 relative z-10">
+            <div className="flex flex-col">
+              <h3 className="text-xl font-bold tracking-widest text-slate-100 uppercase drop-shadow-md">{card.title}</h3>
+              <p className="text-[10px] text-slate-400/80 mt-1 mb-1 uppercase tracking-widest">Credit Card</p>
+              {amcMessageText && AmcIcon && (
+                <p className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider ${amcColorClass}`}>
+                  <AmcIcon className="w-3 h-3" />
+                  {amcMessageText}
+                </p>
+              )}
+            </div>
+            <div className="p-2 bg-white/5 backdrop-blur-sm rounded-xl flex items-center justify-center min-w-[3.5rem] min-h-[3.5rem] border border-white/10 shadow-lg">
+              {logo ? (
+                <img src={logo} alt={`${card.title} logo`} className="w-10 object-contain drop-shadow-lg" />
+              ) : (
+                <CreditCard className="w-7 h-7 text-slate-300 opacity-80" />
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-3 relative z-10 w-full mt-auto">
+            <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-sm">
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Available Limit</p>
+              <p className="text-lg font-medium text-emerald-400 tracking-wide drop-shadow-sm truncate">₹{availableLimit}</p>
+            </div>
+            <div className="bg-black/20 p-3 rounded-xl border border-white/5 backdrop-blur-sm">
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Amount to Pay</p>
+              <p className="text-lg font-medium text-slate-300 tracking-wide drop-shadow-sm truncate">₹{amountToPayNext}</p>
+            </div>
+          </div>
+
+          <p className="flex justify-between items-center text-[10px] uppercase tracking-wide text-slate-400/80 mt-1">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="w-3 h-3" /> 
+              Next Bill: <span className="font-semibold text-slate-200">{nextBillDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              Due: <span className="font-semibold text-slate-200">{nextPayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+            </span>
+          </p>
         </div>
-        <div>
-          <h3 className="text-lg font-bold text-slate-100">{card.title}</h3>
-          <p className="text-sm text-slate-400">Total Limit: ₹{card.totalLimit}</p>
+
+        {/* BACK SIDE */}
+        <div className="absolute inset-0 w-full h-full p-6 bg-slate-900 border border-slate-700/50 rounded-[1.25rem] shadow-2xl flex flex-col [transform:rotateY(180deg)] [backface-visibility:hidden] overflow-y-auto">
+          <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-2 mb-4">Card Properties</h4>
+          <div className="space-y-4 flex-1">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Total Limit</span>
+              <span className="text-slate-200 font-medium tracking-wide">₹{card.totalLimit}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Billing Date</span>
+              <span className="text-slate-200 font-medium">Every {card.billingDate}{['st','nd','rd'][((card.billingDate%10)-1)]||'th'}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Payment Date</span>
+              <span className="text-slate-200 font-medium">Every {card.paymentDate}{['st','nd','rd'][((card.paymentDate%10)-1)]||'th'}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">AMC</span>
+              <span className="text-slate-200 font-medium tracking-wide">₹{card.amc}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Waive Off Limit</span>
+              <span className="text-slate-200 font-medium tracking-wide">₹{card.waiveOffLimit}</span>
+            </div>
+          </div>
+          <p className="text-center text-[10px] text-slate-500 mt-4 uppercase tracking-widest border-t border-slate-800 pt-3">Click to Flip Back</p>
         </div>
       </div>
-
-      <div className="grid grid-cols-2 gap-4 mb-6 relative">
-        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50">
-          <p className="text-xs text-slate-400 mb-1">Available Limit</p>
-          <p className="text-xl font-semibold text-emerald-400">₹{availableLimit}</p>
-        </div>
-        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50">
-          <p className="text-xs text-slate-400 mb-1">Amount to Pay</p>
-          <p className="text-xl font-semibold text-blue-400">₹{amountToPayNext}</p>
-        </div>
-      </div>
-
-      <div className="space-y-3 text-sm relative">
-        <div className="flex items-center justify-between text-slate-300">
-          <span className="flex items-center gap-2 text-slate-400">
-            <CalendarDays className="w-4 h-4" /> Next Bill:
-          </span>
-          <span className="font-medium text-slate-200">
-            {nextBillDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-          </span>
-        </div>
-        <div className="flex items-center justify-between text-slate-300">
-          <span className="flex items-center gap-2 text-slate-400">
-            <CalendarDays className="w-4 h-4" /> Payment Due:
-          </span>
-          <span className="font-medium text-slate-200">
-            {nextPayDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-          </span>
-        </div>
-      </div>
-
-      {amcMessage}
     </div>
   );
 }

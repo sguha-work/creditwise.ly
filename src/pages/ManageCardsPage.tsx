@@ -54,8 +54,12 @@ export default function ManageCardsPage() {
           <thead className="bg-slate-800/50">
             <tr>
               <th className="px-6 py-4 font-medium">Title</th>
+              <th className="px-6 py-4 font-medium">Billing Date</th>
+              <th className="px-6 py-4 font-medium">Payment Date</th>
               <th className="px-6 py-4 font-medium">Total Limit</th>
               <th className="px-6 py-4 font-medium">Current Balance</th>
+              <th className="px-6 py-4 font-medium">AMC</th>
+              <th className="px-6 py-4 font-medium">Waiver Limit</th>
               <th className="px-6 py-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
@@ -63,8 +67,12 @@ export default function ManageCardsPage() {
             {cards?.map((card) => (
               <tr key={card.id} className="hover:bg-slate-800/20 transition-colors">
                 <td className="px-6 py-4">{card.title}</td>
+                <td className="px-6 py-4">{card.billingDate}</td>
+                <td className="px-6 py-4">{card.paymentDate}</td>
                 <td className="px-6 py-4">₹{card.totalLimit}</td>
                 <td className="px-6 py-4">₹{card.currentBalance}</td>
+                <td className="px-6 py-4">₹{card.amc}</td>
+                <td className="px-6 py-4">₹{card.waiveOffLimit}</td>
                 <td className="px-6 py-4 text-right">
                   <button 
                     onClick={() => openEditModal(card)}
@@ -83,7 +91,7 @@ export default function ManageCardsPage() {
             ))}
             {(!cards || cards.length === 0) && (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
+                <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
                   No cards found.
                 </td>
               </tr>
