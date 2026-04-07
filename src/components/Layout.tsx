@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState, useEffect } from 'react';
@@ -13,11 +13,15 @@ export default function Layout() {
   const [isExpensesOpen, setIsExpensesOpen] = useState(
     location.pathname.includes('/expenses')
   );
+  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (location.pathname.includes('/expenses')) {
       setIsExpensesOpen(true);
     }
+    // Close sidebar on mobile when navigating
+    setIsSidebarOpen(false);
   }, [location.pathname]);
 
   const navItems = [
@@ -26,15 +30,40 @@ export default function Layout() {
   ];
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-200">
+    <div className="flex flex-col md:flex-row h-screen bg-slate-950 text-slate-200">
+      
+      {/* Mobile Topbar */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900 z-30 shrink-0">
+        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+          creditwise.ly
+        </h1>
+        <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+          className="p-1 text-slate-400 hover:text-white focus:outline-none"
+        >
+          {isSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col">
-        <div className="p-6">
+      <aside className={cn(
+        "fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50 transform transition-transform duration-300 md:relative md:translate-x-0 shrink-0",
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="p-6 hidden md:block">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 p-1 to-emerald-400 bg-clip-text text-transparent">
             creditwise.ly
           </h1>
         </div>
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 space-y-2 overflow-y-auto mt-6 md:mt-0">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -116,7 +145,7 @@ export default function Layout() {
 
         </nav>
         
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-slate-800 mt-auto">
           <Link
             to="/about"
             className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800/50"
@@ -128,7 +157,7 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-slate-950 p-8">
+      <main className="flex-1 overflow-auto bg-slate-950 p-4 sm:p-8">
         <div className="max-w-6xl mx-auto">
           <Outlet />
         </div>

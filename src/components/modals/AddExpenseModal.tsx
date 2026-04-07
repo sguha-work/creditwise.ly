@@ -138,7 +138,7 @@ export default function AddExpenseModal({ isOpen, onClose, initialExpense }: Pro
             <label className="block text-sm font-medium text-slate-400 mb-1">Details</label>
             <input required type="text" name="details" value={formData.details} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. Amazon Purchase" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Amount</label>
               <input required type="number" step="0.01" name="amount" value={formData.amount} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />

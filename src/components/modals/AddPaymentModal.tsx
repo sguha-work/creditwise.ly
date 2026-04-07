@@ -93,7 +93,7 @@ export default function AddPaymentModal({ isOpen, onClose }: Props) {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Amount Paid</label>
               <input required type="number" step="0.01" name="amount" value={formData.amount} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-purple-500" />

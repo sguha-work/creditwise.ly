@@ -86,8 +86,8 @@ export default function ManageExpensesPage({ mode }: { mode?: 'monthly' | 'yearl
         </div>
       )}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <table className="w-full text-left text-slate-300">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden overflow-x-auto">
+        <table className="w-full text-left text-slate-300 whitespace-nowrap min-w-max">
           <thead className="bg-slate-800/50">
             <tr>
               <th className="px-6 py-4 font-medium">Date</th>

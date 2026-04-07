@@ -93,7 +93,7 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
             <label className="block text-sm font-medium text-slate-400 mb-1">Card Title</label>
             <input required type="text" name="title" value={formData.title} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Billing Date (1-31)</label>
               <input required type="number" min="1" max="31" name="billingDate" value={formData.billingDate} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
@@ -103,7 +103,7 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
               <input required type="number" min="1" max="31" name="paymentDate" value={formData.paymentDate} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Total Limit</label>
               <input required type="number" name="totalLimit" value={formData.totalLimit} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
