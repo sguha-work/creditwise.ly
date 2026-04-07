@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { db } from '../../db/db';
+import { useState, useEffect } from 'react';
+import { db, type Expense } from '../../db/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialExpense?: Expense;
 }
 
-export default function AddExpenseModal({ isOpen, onClose }: Props) {
+export default function AddExpenseModal({ isOpen, onClose, initialExpense }: Props) {
   const navigate = useNavigate();
   const cards = useLiveQuery(() => db.cards.toArray());
   const [formData, setFormData] = useState({
@@ -18,6 +19,24 @@ export default function AddExpenseModal({ isOpen, onClose }: Props) {
     amount: '',
     date: new Date().toISOString().slice(0, 16),
   });
+
+  useEffect(() => {
+    if (initialExpense) {
+      setFormData({
+        cardId: initialExpense.cardId.toString(),
+        details: initialExpense.details,
+        amount: initialExpense.amount.toString(),
+        date: initialExpense.date,
+      });
+    } else {
+      setFormData({
+        cardId: '',
+        details: '',
+        amount: '',
+        date: new Date().toISOString().slice(0, 16),
+      });
+    }
+  }, [initialExpense, isOpen]);
 
   if (!isOpen) return null;
 
@@ -48,23 +67,44 @@ export default function AddExpenseModal({ isOpen, onClose }: Props) {
     e.preventDefault();
     if (!formData.cardId) return alert('Please select a card');
     
-    await db.expenses.add({
-      cardId: parseInt(formData.cardId),
-      details: formData.details,
-      amount: parseFloat(formData.amount),
-      date: formData.date
-    });
-    
-    // Also update the card's currentBalance
-    const card = await db.cards.get(parseInt(formData.cardId));
-    if (card) {
-      await db.cards.update(card.id!, {
-        currentBalance: card.currentBalance + parseFloat(formData.amount)
+    if (initialExpense) {
+      const oldCard = await db.cards.get(initialExpense.cardId);
+      if (oldCard) {
+        await db.cards.update(oldCard.id!, {
+          currentBalance: oldCard.currentBalance - initialExpense.amount
+        });
+      }
+      
+      await db.expenses.update(initialExpense.id!, {
+        cardId: parseInt(formData.cardId),
+        details: formData.details,
+        amount: parseFloat(formData.amount),
+        date: formData.date
       });
+      
+      const newCard = await db.cards.get(parseInt(formData.cardId));
+      if (newCard) {
+        await db.cards.update(newCard.id!, {
+          currentBalance: newCard.currentBalance + parseFloat(formData.amount)
+        });
+      }
+    } else {
+      await db.expenses.add({
+        cardId: parseInt(formData.cardId),
+        details: formData.details,
+        amount: parseFloat(formData.amount),
+        date: formData.date
+      });
+      
+      const card = await db.cards.get(parseInt(formData.cardId));
+      if (card) {
+        await db.cards.update(card.id!, {
+          currentBalance: card.currentBalance + parseFloat(formData.amount)
+        });
+      }
     }
 
     onClose();
-    setFormData({ ...formData, details: '', amount: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -80,14 +120,14 @@ export default function AddExpenseModal({ isOpen, onClose }: Props) {
         
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-            Log an Expense
+            {initialExpense ? 'Edit Expense' : 'Log an Expense'}
           </h2>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-400 mb-1">Select Card</label>
-            <select required name="cardId" value={formData.cardId} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
+            <select required name="cardId" value={formData.cardId} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500">
               <option value="">Select a card...</option>
               {cards?.map(card => (
                 <option key={card.id} value={card.id}>{card.title}</option>
@@ -96,21 +136,21 @@ export default function AddExpenseModal({ isOpen, onClose }: Props) {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-400 mb-1">Details</label>
-            <input required type="text" name="details" value={formData.details} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. Amazon Purchase" />
+            <input required type="text" name="details" value={formData.details} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" placeholder="e.g. Amazon Purchase" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Amount</label>
-              <input required type="number" step="0.01" name="amount" value={formData.amount} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
+              <input required type="number" step="0.01" name="amount" value={formData.amount} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-1">Date & Time</label>
-              <input required type="datetime-local" name="date" value={formData.date} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
+              <input required type="datetime-local" name="date" value={formData.date} onChange={handleChange} className="w-full bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500" />
             </div>
           </div>
           <div className="pt-4">
             <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-              Save Expense
+              {initialExpense ? 'Update Expense' : 'Save Expense'}
             </button>
           </div>
         </form>

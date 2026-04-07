@@ -2,6 +2,30 @@ import { type Card, db } from '../db/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { CreditCard, CalendarDays, Zap, AlertCircle } from 'lucide-react';
 
+import sbiLogo from '../assets/banks/sbi.svg';
+import iciciLogo from '../assets/banks/icici.png';
+import axisLogo from '../assets/banks/axis.svg';
+import kotakLogo from '../assets/banks/kotak.svg';
+import hdfcLogo from '../assets/banks/hdfc.png';
+
+const BANK_LOGOS: Record<string, string> = {
+  sbi: sbiLogo,
+  icici: iciciLogo,
+  axis: axisLogo,
+  kotak: kotakLogo,
+  hdfc: hdfcLogo
+};
+
+function getBankLogo(title: string) {
+  const lowerTitle = title.toLowerCase();
+  for (const [key, logo] of Object.entries(BANK_LOGOS)) {
+    if (lowerTitle.includes(key)) {
+      return logo;
+    }
+  }
+  return null;
+}
+
 export default function CardThumbnail({ card }: { card: Card }) {
   // Fetch expenses to determine AMC condition and current limits dynamically
   const expenses = useLiveQuery(() => 
@@ -58,14 +82,20 @@ export default function CardThumbnail({ card }: { card: Card }) {
     }
   }
 
+  const logo = getBankLogo(card.title);
+
   return (
     <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl flex flex-col hover:border-slate-700 transition-colors relative overflow-hidden group">
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
 
       <div className="flex items-center gap-4 mb-6 relative">
-        <div className="p-3 bg-slate-800 rounded-xl">
-          <CreditCard className="w-6 h-6 text-blue-400" />
+        <div className="p-3 bg-slate-800 rounded-xl flex items-center justify-center min-w-[3rem] min-h-[3rem]">
+          {logo ? (
+            <img src={logo} alt={`${card.title} logo`} className="w-8 object-contain" />
+          ) : (
+            <CreditCard className="w-6 h-6 text-blue-400" />
+          )}
         </div>
         <div>
           <h3 className="text-lg font-bold text-slate-100">{card.title}</h3>

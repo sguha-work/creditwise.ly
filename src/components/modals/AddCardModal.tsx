@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { db } from '../../db/db';
+import React, { useState, useEffect } from 'react';
+import { db, type Card } from '../../db/db';
 import { X } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialCard?: Card;
 }
 
-export default function AddCardModal({ isOpen, onClose }: Props) {
+export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
   const [formData, setFormData] = useState({
     title: '',
     billingDate: '',
@@ -18,19 +19,55 @@ export default function AddCardModal({ isOpen, onClose }: Props) {
     waiveOffLimit: '0',
   });
 
+  useEffect(() => {
+    if (initialCard) {
+      setFormData({
+        title: initialCard.title,
+        billingDate: initialCard.billingDate.toString(),
+        paymentDate: initialCard.paymentDate.toString(),
+        totalLimit: initialCard.totalLimit.toString(),
+        currentBalance: initialCard.currentBalance.toString(),
+        amc: initialCard.amc.toString(),
+        waiveOffLimit: initialCard.waiveOffLimit.toString(),
+      });
+    } else {
+      setFormData({
+        title: '',
+        billingDate: '',
+        paymentDate: '',
+        totalLimit: '',
+        currentBalance: '',
+        amc: '0',
+        waiveOffLimit: '0',
+      });
+    }
+  }, [initialCard, isOpen]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await db.cards.add({
-      title: formData.title,
-      billingDate: parseInt(formData.billingDate),
-      paymentDate: parseInt(formData.paymentDate),
-      totalLimit: parseFloat(formData.totalLimit),
-      currentBalance: parseFloat(formData.currentBalance),
-      amc: parseFloat(formData.amc),
-      waiveOffLimit: parseFloat(formData.waiveOffLimit)
-    });
+    if (initialCard) {
+      await db.cards.update(initialCard.id!, {
+        title: formData.title,
+        billingDate: parseInt(formData.billingDate),
+        paymentDate: parseInt(formData.paymentDate),
+        totalLimit: parseFloat(formData.totalLimit),
+        currentBalance: parseFloat(formData.currentBalance),
+        amc: parseFloat(formData.amc),
+        waiveOffLimit: parseFloat(formData.waiveOffLimit)
+      });
+    } else {
+      await db.cards.add({
+        title: formData.title,
+        billingDate: parseInt(formData.billingDate),
+        paymentDate: parseInt(formData.paymentDate),
+        totalLimit: parseFloat(formData.totalLimit),
+        currentBalance: parseFloat(formData.currentBalance),
+        amc: parseFloat(formData.amc),
+        waiveOffLimit: parseFloat(formData.waiveOffLimit)
+      });
+    }
     onClose();
   };
 
@@ -47,7 +84,7 @@ export default function AddCardModal({ isOpen, onClose }: Props) {
         
         <div className="p-6 border-b border-slate-800">
           <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Add New Card
+            {initialCard ? 'Edit Card' : 'Add New Card'}
           </h2>
         </div>
 
@@ -88,7 +125,7 @@ export default function AddCardModal({ isOpen, onClose }: Props) {
           </div>
           <div className="pt-4">
             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-              Save Card
+              {initialCard ? 'Update Card' : 'Save Card'}
             </button>
           </div>
         </form>
