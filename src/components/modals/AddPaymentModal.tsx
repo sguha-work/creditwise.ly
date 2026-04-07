@@ -52,15 +52,6 @@ export default function AddPaymentModal({ isOpen, onClose }: Props) {
       amount: parseFloat(formData.amount),
       date: formData.date
     });
-    
-    // Also update the card's currentBalance
-    const card = await db.cards.get(parseInt(formData.cardId));
-    if (card) {
-      // payments reduce the balance owed
-      await db.cards.update(card.id!, {
-        currentBalance: Math.max(0, card.currentBalance - parseFloat(formData.amount))
-      });
-    }
 
     onClose();
     setFormData({ ...formData, amount: '' });

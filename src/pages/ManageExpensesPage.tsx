@@ -26,12 +26,6 @@ export default function ManageExpensesPage({ mode }: { mode?: 'monthly' | 'yearl
   const handleDelete = async (expense: Expense) => {
     if (confirm('Are you sure you want to delete this expense?')) {
       await db.expenses.delete(expense.id!);
-      const card = await db.cards.get(expense.cardId);
-      if (card) {
-        await db.cards.update(card.id!, {
-          currentBalance: card.currentBalance - expense.amount
-        });
-      }
     }
   };
 

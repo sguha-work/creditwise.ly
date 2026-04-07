@@ -6,7 +6,6 @@ export interface Card {
   billingDate: number;
   paymentDate: number;
   totalLimit: number;
-  currentBalance: number;
   amc: number;
   waiveOffLimit: number;
 }
@@ -36,6 +35,10 @@ db.version(1).stores({
   cards: '++id, title, billingDate, paymentDate, totalLimit, currentBalance, amc, waiveOffLimit',
   expenses: '++id, cardId, date, amount',
   payments: '++id, cardId, date, amount',
+});
+
+db.version(2).stores({
+  cards: '++id, title, billingDate, paymentDate, totalLimit, amc, waiveOffLimit',
 });
 
 export { db };

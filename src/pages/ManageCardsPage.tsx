@@ -5,6 +5,9 @@ import AddCardModal from '../components/modals/AddCardModal';
 
 export default function ManageCardsPage() {
   const cards = useLiveQuery(() => db.cards.toArray());
+  const expenses = useLiveQuery(() => db.expenses.toArray());
+  const payments = useLiveQuery(() => db.payments.toArray());
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cardToEdit, setCardToEdit] = useState<Card | undefined>(undefined);
 
@@ -64,13 +67,20 @@ export default function ManageCardsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/50">
-            {cards?.map((card) => (
+            {cards?.map((card) => {
+              const cardExpenses = expenses?.filter(e => e.cardId === card.id) || [];
+              const cardPayments = payments?.filter(p => p.cardId === card.id) || [];
+              const totalSpent = cardExpenses.reduce((sum, e) => sum + e.amount, 0);
+              const totalPaid = cardPayments.reduce((sum, p) => sum + p.amount, 0);
+              const currentBalance = card.totalLimit - totalSpent + totalPaid;
+
+              return (
               <tr key={card.id} className="hover:bg-slate-800/20 transition-colors">
                 <td className="px-6 py-4">{card.title}</td>
                 <td className="px-6 py-4">{card.billingDate}</td>
                 <td className="px-6 py-4">{card.paymentDate}</td>
                 <td className="px-6 py-4">₹{card.totalLimit}</td>
-                <td className="px-6 py-4">₹{card.currentBalance}</td>
+                <td className="px-6 py-4 text-emerald-400 font-medium">₹{currentBalance}</td>
                 <td className="px-6 py-4">₹{card.amc}</td>
                 <td className="px-6 py-4">₹{card.waiveOffLimit}</td>
                 <td className="px-6 py-4 text-right">
@@ -88,7 +98,8 @@ export default function ManageCardsPage() {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {(!cards || cards.length === 0) && (
               <tr>
                 <td colSpan={8} className="px-6 py-12 text-center text-slate-500">

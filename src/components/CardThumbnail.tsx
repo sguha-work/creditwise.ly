@@ -42,22 +42,35 @@ export default function CardThumbnail({ card }: { card: Card }) {
   // Fallbacks while loading
   if (!expenses || !payments) return <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse aspect-[1.586/1]"></div>;
 
-  const totalSpent = expenses.reduce((sum: number, exp) => sum + exp.amount, 0);
-  
-  const amountToPayNext = card.currentBalance;
-  const availableLimit = Math.max(0, card.totalLimit - card.currentBalance);
-
   const today = new Date();
   
+  // Calculate next and last billing dates
   let nextBillDate = new Date(today.getFullYear(), today.getMonth(), card.billingDate);
+  let lastBillDate = new Date(today.getFullYear(), today.getMonth(), card.billingDate);
+
   if (today > nextBillDate) {
     nextBillDate.setMonth(nextBillDate.getMonth() + 1);
+  } else {
+    lastBillDate.setMonth(lastBillDate.getMonth() - 1);
   }
 
   let nextPayDate = new Date(today.getFullYear(), today.getMonth(), card.paymentDate);
   if (today > nextPayDate || nextPayDate <= nextBillDate) {
     nextPayDate.setMonth(nextPayDate.getMonth() + 1);
   }
+
+  const totalSpent = expenses.reduce((sum: number, exp) => sum + exp.amount, 0);
+
+  // Calculate amount to pay based on expenses in the current billing cycle
+  const currentCycleExpenses = expenses.filter(exp => {
+    const expDate = new Date(exp.date);
+    return expDate >= lastBillDate && expDate < nextBillDate;
+  });
+  
+  const amountToPayNext = currentCycleExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  
+  const totalPaid = payments.reduce((sum: number, p) => sum + p.amount, 0);
+  const availableLimit = Math.max(0, card.totalLimit - totalSpent + totalPaid);
 
   // AMC Waiver logic
   let amcMessageText = null;

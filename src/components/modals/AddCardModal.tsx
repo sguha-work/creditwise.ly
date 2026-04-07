@@ -14,7 +14,6 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
     billingDate: '',
     paymentDate: '',
     totalLimit: '',
-    currentBalance: '',
     amc: '0',
     waiveOffLimit: '0',
   });
@@ -26,7 +25,6 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
         billingDate: initialCard.billingDate.toString(),
         paymentDate: initialCard.paymentDate.toString(),
         totalLimit: initialCard.totalLimit.toString(),
-        currentBalance: initialCard.currentBalance.toString(),
         amc: initialCard.amc.toString(),
         waiveOffLimit: initialCard.waiveOffLimit.toString(),
       });
@@ -36,7 +34,6 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
         billingDate: '',
         paymentDate: '',
         totalLimit: '',
-        currentBalance: '',
         amc: '0',
         waiveOffLimit: '0',
       });
@@ -53,7 +50,6 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
         billingDate: parseInt(formData.billingDate),
         paymentDate: parseInt(formData.paymentDate),
         totalLimit: parseFloat(formData.totalLimit),
-        currentBalance: parseFloat(formData.currentBalance),
         amc: parseFloat(formData.amc),
         waiveOffLimit: parseFloat(formData.waiveOffLimit)
       });
@@ -63,7 +59,6 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
         billingDate: parseInt(formData.billingDate),
         paymentDate: parseInt(formData.paymentDate),
         totalLimit: parseFloat(formData.totalLimit),
-        currentBalance: parseFloat(formData.currentBalance),
         amc: parseFloat(formData.amc),
         waiveOffLimit: parseFloat(formData.waiveOffLimit)
       });
@@ -103,15 +98,9 @@ export default function AddCardModal({ isOpen, onClose, initialCard }: Props) {
               <input required type="number" min="1" max="31" name="paymentDate" value={formData.paymentDate} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Total Limit</label>
-              <input required type="number" name="totalLimit" value={formData.totalLimit} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Current Balance</label>
-              <input required type="number" name="currentBalance" value={formData.currentBalance} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-400 mb-1">Total Limit</label>
+            <input required type="number" name="totalLimit" value={formData.totalLimit} onChange={handleChange} className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

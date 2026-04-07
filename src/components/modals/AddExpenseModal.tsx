@@ -68,26 +68,12 @@ export default function AddExpenseModal({ isOpen, onClose, initialExpense }: Pro
     if (!formData.cardId) return alert('Please select a card');
     
     if (initialExpense) {
-      const oldCard = await db.cards.get(initialExpense.cardId);
-      if (oldCard) {
-        await db.cards.update(oldCard.id!, {
-          currentBalance: oldCard.currentBalance - initialExpense.amount
-        });
-      }
-      
       await db.expenses.update(initialExpense.id!, {
         cardId: parseInt(formData.cardId),
         details: formData.details,
         amount: parseFloat(formData.amount),
         date: formData.date
       });
-      
-      const newCard = await db.cards.get(parseInt(formData.cardId));
-      if (newCard) {
-        await db.cards.update(newCard.id!, {
-          currentBalance: newCard.currentBalance + parseFloat(formData.amount)
-        });
-      }
     } else {
       await db.expenses.add({
         cardId: parseInt(formData.cardId),
@@ -95,13 +81,6 @@ export default function AddExpenseModal({ isOpen, onClose, initialExpense }: Pro
         amount: parseFloat(formData.amount),
         date: formData.date
       });
-      
-      const card = await db.cards.get(parseInt(formData.cardId));
-      if (card) {
-        await db.cards.update(card.id!, {
-          currentBalance: card.currentBalance + parseFloat(formData.amount)
-        });
-      }
     }
 
     onClose();
