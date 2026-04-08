@@ -2,22 +2,32 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import AddCardModal from '../components/modals/AddCardModal';
+import AddExpenseModal from '../components/modals/AddExpenseModal';
 import CardThumbnail from '../components/CardThumbnail';
 
 export default function HomePage() {
   const cards = useLiveQuery(() => db.cards.toArray());
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold text-slate-100">Dashboard</h1>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          Add New Card
-        </button>
+        <div className="flex gap-2 sm:gap-3">
+          <button 
+            onClick={() => setIsExpenseModalOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors flex-1 sm:flex-none"
+          >
+            Add Expense
+          </button>
+          <button 
+            onClick={() => setIsCardModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors flex-1 sm:flex-none"
+          >
+            Add New Card
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -31,7 +41,8 @@ export default function HomePage() {
         )}
       </div>
 
-      <AddCardModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <AddCardModal isOpen={isCardModalOpen} onClose={() => setIsCardModalOpen(false)} />
+      <AddExpenseModal isOpen={isExpenseModalOpen} onClose={() => setIsExpenseModalOpen(false)} />
     </div>
   );
 }

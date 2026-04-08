@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X } from 'lucide-react';
+import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X, LayoutDashboard } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState, useEffect } from 'react';
@@ -34,9 +34,20 @@ export default function Layout() {
       
       {/* Mobile Topbar */}
       <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900 z-30 shrink-0">
-        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-          creditwise.ly
-        </h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+            creditwise.ly
+          </h1>
+          {location.pathname !== '/' && (
+            <Link 
+              to="/" 
+              className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-lg transition-colors border border-slate-700"
+              title="Go to Dashboard"
+            >
+              <LayoutDashboard className="w-5 h-5" />
+            </Link>
+          )}
+        </div>
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
           className="p-1 text-slate-400 hover:text-white focus:outline-none"
