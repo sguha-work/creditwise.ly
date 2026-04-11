@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X, LayoutDashboard } from 'lucide-react';
+import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X, LayoutDashboard, Tags } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState, useEffect } from 'react';
@@ -142,6 +142,19 @@ export default function Layout() {
           </div>
 
           <Link
+            to="/categories"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+              location.pathname === '/categories'
+                ? 'bg-slate-800 text-white font-medium'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            )}
+          >
+            <Tags className="w-5 h-5" />
+            Manage Categories
+          </Link>
+
+          <Link
             to="/payments"
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
@@ -162,7 +175,7 @@ export default function Layout() {
             className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-slate-400 hover:text-white hover:bg-slate-800/50"
           >
             <Info className="w-5 h-5" />
-            About Creator
+            About
           </Link>
         </div>
       </aside>

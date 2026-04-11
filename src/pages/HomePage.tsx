@@ -1,9 +1,34 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { ShieldCheck, PenLine, Sparkles } from 'lucide-react';
 import { db } from '../db/db';
 import AddCardModal from '../components/modals/AddCardModal';
 import AddExpenseModal from '../components/modals/AddExpenseModal';
 import CardThumbnail from '../components/CardThumbnail';
+
+const HERO_POINTS = [
+  {
+    icon: ShieldCheck,
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-400/10 border-emerald-400/20',
+    title: 'Zero tracking. Seriously.',
+    body: "creditwise.ly doesn't peek at your bank SMS, scrape your statements, or phone home to any server. Every number you see here came straight from your own fingers — no background magic, no silent data collection, ever.",
+  },
+  {
+    icon: PenLine,
+    color: 'text-blue-400',
+    bg: 'bg-blue-400/10 border-blue-400/20',
+    title: 'You are the source of truth.',
+    body: "Think of this as your financial journal. The accuracy of every insight — limits, EMIs, category budgets, billing cycles — is entirely in your hands. Garbage in, garbage out; gold in, gold out.",
+  },
+  {
+    icon: Sparkles,
+    color: 'text-amber-400',
+    bg: 'bg-amber-400/10 border-amber-400/20',
+    title: 'Daily logging builds real habits.',
+    body: "Logging expenses the moment they happen takes 10 seconds and rewires how your brain relates to money. Do it consistently for 30 days and you won't need to — you'll already know your spending patterns by heart.",
+  },
+] as const;
 
 export default function HomePage() {
   const cards = useLiveQuery(() => db.cards.toArray());
@@ -11,17 +36,18 @@ export default function HomePage() {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Header row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold text-slate-100">Dashboard</h1>
         <div className="flex gap-2 sm:gap-3">
-          <button 
+          <button
             onClick={() => setIsExpenseModalOpen(true)}
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors flex-1 sm:flex-none"
           >
             Add Expense
           </button>
-          <button 
+          <button
             onClick={() => setIsCardModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors flex-1 sm:flex-none"
           >
@@ -30,6 +56,41 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Hero section */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+        {/* Top banner */}
+        <div className="px-6 pt-6 pb-4 border-b border-slate-800">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">How creditwise.ly works</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-100 leading-snug">
+            Your money, your data,{' '}
+            <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+              your rules.
+            </span>
+          </h2>
+          <p className="mt-2 text-sm text-slate-400 max-w-2xl leading-relaxed">
+            Most finance apps quietly help themselves to your data in exchange for convenience.
+            creditwise.ly takes the opposite bet — every insight lives entirely on your device,
+            powered only by what you choose to log.
+          </p>
+        </div>
+
+        {/* Three pillars */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-slate-800">
+          {HERO_POINTS.map(({ icon: Icon, color, bg, title, body }) => (
+            <div key={title} className="p-5 flex flex-col gap-3">
+              <span className={`w-9 h-9 rounded-xl border flex items-center justify-center flex-shrink-0 ${bg}`}>
+                <Icon className={`w-4.5 h-4.5 ${color}`} style={{ width: '1.125rem', height: '1.125rem' }} />
+              </span>
+              <div>
+                <p className={`text-sm font-semibold mb-1 ${color}`}>{title}</p>
+                <p className="text-xs text-slate-400 leading-relaxed">{body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards?.map((card) => (
           <CardThumbnail key={card.id} card={card} />

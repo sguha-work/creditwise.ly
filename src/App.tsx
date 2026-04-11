@@ -4,6 +4,7 @@ import HomePage from './pages/HomePage';
 import ManageCardsPage from './pages/ManageCardsPage';
 import ManageExpensesPage from './pages/ManageExpensesPage';
 import ManagePaymentsPage from './pages/ManagePaymentsPage';
+import ManageCategoriesPage from './pages/ManageCategoriesPage';
 import AboutPage from './pages/AboutPage';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="cards" element={<ManageCardsPage />} />
+          <Route path="categories" element={<ManageCategoriesPage />} />
           <Route path="expenses/monthly" element={<ManageExpensesPage mode="monthly" />} />
           <Route path="expenses/yearly" element={<ManageExpensesPage mode="yearly" />} />
           <Route path="payments" element={<ManagePaymentsPage />} />

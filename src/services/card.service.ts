@@ -1,5 +1,40 @@
 import { db, type Card, type Expense, type Payment } from '../db/db';
 
+/**
+ * Months between two dates (year*12 + month arithmetic — ignores day).
+ * Positive when date2 is later than date1.
+ */
+function monthsBetween(date1: Date, date2: Date): number {
+  return (date2.getFullYear() - date1.getFullYear()) * 12 +
+    (date2.getMonth() - date1.getMonth());
+}
+
+/**
+ * Monthly EMI amount for the principal using the reducing-balance formula.
+ * For 0% interest simply returns principal / months.
+ */
+export function calcMonthlyEmi(principal: number, annualRatePct: number, months: number): number {
+  if (annualRatePct === 0 || months === 0) return principal / months;
+  const r = annualRatePct / 100 / 12;
+  return (principal * r * Math.pow(1 + r, months)) / (Math.pow(1 + r, months) - 1);
+}
+
+/**
+ * Total amount that an EMI purchase costs over its full tenure.
+ * This is what gets blocked from the credit limit and counted toward AMC waiver.
+ *   = (monthlyEmi × months) + processingFee + gst
+ */
+export function calcEmiTotalCost(
+  principal: number,
+  annualRatePct: number,
+  months: number,
+  processingFee: number,
+  gst: number,
+): number {
+  const monthlyEmi = calcMonthlyEmi(principal, annualRatePct, months);
+  return monthlyEmi * months + processingFee + gst;
+}
+
 export function getCardMetrics(card: Card, expenses: Expense[], payments: Payment[]) {
   const today = new Date();
   
@@ -18,15 +53,49 @@ export function getCardMetrics(card: Card, expenses: Expense[], payments: Paymen
     nextPayDate.setMonth(nextPayDate.getMonth() + 1);
   }
 
-  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  // For available limit and AMC waiver: for EMI expenses the full total cost
+  // (principal + total interest + processing fee + GST) is blocked/counted.
+  const totalSpent = expenses.reduce((sum, exp) => {
+    if (!exp.isEmi) return sum + exp.amount;
+    return sum + calcEmiTotalCost(
+      exp.amount,
+      exp.emiInterestRate ?? 0,
+      exp.emiMonths ?? 1,
+      exp.emiProcessingFee ?? 0,
+      exp.emiGst ?? 0,
+    );
+  }, 0);
+
   const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-  
-  const currentCycleExpenses = expenses.filter(exp => {
-    const expDate = new Date(exp.date);
-    return expDate >= lastBillDate && expDate < nextBillDate;
-  });
-  
-  const amountToPayNext = currentCycleExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+  // Build amountToPayNext cycle-aware for EMI:
+  // - Non-EMI: include if expense date falls within [lastBillDate, nextBillDate)
+  // - EMI: include 1 installment (+ proportional GST) if this billing cycle is within the active EMI window
+  let amountToPayNext = 0;
+  const currentCycleExpenses: Expense[] = [];
+
+  for (const exp of expenses) {
+    if (!exp.isEmi) {
+      const expDate = new Date(exp.date);
+      if (expDate >= lastBillDate && expDate < nextBillDate) {
+        amountToPayNext += exp.amount;
+        currentCycleExpenses.push(exp);
+      }
+    } else {
+      // Determine which "installment month" this billing cycle corresponds to
+      const emiStart = new Date(exp.date);
+      const monthIndex = monthsBetween(emiStart, lastBillDate);
+      const months = exp.emiMonths ?? 1;
+      if (monthIndex >= 0 && monthIndex < months) {
+        const monthlyEmi = calcMonthlyEmi(exp.amount, exp.emiInterestRate ?? 0, months);
+        const monthlyProcessingFee = (exp.emiProcessingFee ?? 0) / months;
+        const monthlyGst = (exp.emiGst ?? 0) / months;
+        amountToPayNext += monthlyEmi + monthlyProcessingFee + monthlyGst;
+        currentCycleExpenses.push(exp);
+      }
+    }
+  }
+
   const availableLimit = Math.max(0, card.totalLimit - totalSpent + totalPaid);
   const currentBalance = card.totalLimit - totalSpent + totalPaid;
 
