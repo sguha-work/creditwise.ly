@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ShieldCheck, PenLine, Sparkles } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 import { db } from '../db/db';
 import AddCardModal from '../components/modals/AddCardModal';
 import AddExpenseModal from '../components/modals/AddExpenseModal';
@@ -34,6 +40,9 @@ export default function HomePage() {
   const cards = useLiveQuery(() => db.cards.toArray());
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isDescriptionVisible, setIsDescriptionVisible] = useState(false);
+
+  const showFullDescription = !cards || cards.length === 0 || isDescriptionVisible;
 
   return (
     <div className="space-y-8">
@@ -56,8 +65,27 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Description toggle icon (only if cards exist) */}
+      {cards && cards.length > 0 && (
+        <div className="flex justify-center -mb-4">
+          <button
+            onClick={() => setIsDescriptionVisible(!isDescriptionVisible)}
+            className={cn(
+              "p-2 rounded-full transition-all duration-500 group",
+              isDescriptionVisible 
+                ? "bg-slate-800 text-emerald-400 rotate-180" 
+                : "bg-slate-900 text-slate-400 hover:text-emerald-400 glow-pulse"
+            )}
+            title={isDescriptionVisible ? "Hide info" : "Show info"}
+          >
+            <Sparkles className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
       {/* Hero section */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      {showFullDescription && (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden transition-all duration-500 animate-in fade-in slide-in-from-top-4">
         {/* Top banner */}
         <div className="px-6 pt-6 pb-4 border-b border-slate-800">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">How creditwise.ly works</p>
@@ -89,6 +117,7 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+      )}
 
       {/* Cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
