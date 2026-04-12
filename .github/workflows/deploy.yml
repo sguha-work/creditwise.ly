@@ -1,4 +1,4 @@
-name: CICD for WhichCard
+name: CICD for Creditwise.ly
 
 on:
   push:
