@@ -6,6 +6,7 @@ import ManageExpensesPage from './pages/ManageExpensesPage';
 import ManagePaymentsPage from './pages/ManagePaymentsPage';
 import ManageCategoriesPage from './pages/ManageCategoriesPage';
 import VisualizePage from './pages/VisualizePage';
+import ExportPage from './pages/ExportPage';
 import AboutPage from './pages/AboutPage';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="expenses/yearly" element={<ManageExpensesPage mode="yearly" />} />
           <Route path="payments" element={<ManagePaymentsPage />} />
           <Route path="visualize" element={<VisualizePage />} />
+          <Route path="export" element={<ExportPage />} />
           <Route path="about" element={<AboutPage />} />
         </Route>
       </Routes>

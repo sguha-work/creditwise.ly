@@ -49,7 +49,7 @@ export default function AddExpenseModal({ isOpen, onClose, initialExpense }: Pro
     categoryId: '',
     details: '',
     amount: '',
-    date: new Date().toISOString().slice(0, 16),
+        date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
     // EMI
     isEmi: false,
     emiMonths: 3,
@@ -139,7 +139,7 @@ export default function AddExpenseModal({ isOpen, onClose, initialExpense }: Pro
         categoryId: '',
         details: '',
         amount: '',
-        date: new Date().toISOString().slice(0, 16),
+            date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
         isEmi: false,
         emiMonths: 3,
         emiInterestPreset: 0,

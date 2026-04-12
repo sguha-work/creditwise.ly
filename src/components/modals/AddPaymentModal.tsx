@@ -15,7 +15,7 @@ export default function AddPaymentModal({ isOpen, onClose }: Props) {
   const [formData, setFormData] = useState({
     cardId: '',
     amount: '',
-    date: new Date().toISOString().slice(0, 16),
+    date: new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16),
   });
 
   if (!isOpen) return null;

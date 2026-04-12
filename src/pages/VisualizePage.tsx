@@ -52,25 +52,25 @@ export default function VisualizePage() {
     return { name: cat.title, amount: total };
   }).filter(d => d.amount > 0);
 
-  // 3. Credit card-wise payment for this month
-  const monthlyCardPaymentData = cards.map(card => {
-    const total = payments
-      .filter(p => {
-        const d = new Date(p.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear && p.cardId === card.id;
+  // 3. Credit card-wise spending for this month
+  const monthlyCardSpendingData = cards.map(card => {
+    const total = expenses
+      .filter(exp => {
+        const d = new Date(exp.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear && exp.cardId === card.id;
       })
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, exp) => sum + exp.amount, 0);
     return { name: card.title, amount: total };
   }).filter(d => d.amount > 0);
 
-  // 4. Credit card-wise payment for yearly
-  const yearlyCardPaymentData = cards.map(card => {
-    const total = payments
-      .filter(p => {
-        const d = new Date(p.date);
-        return d.getFullYear() === currentYear && p.cardId === card.id;
+  // 4. Credit card-wise spending for yearly
+  const yearlyCardSpendingData = cards.map(card => {
+    const total = expenses
+      .filter(exp => {
+        const d = new Date(exp.date);
+        return d.getFullYear() === currentYear && exp.cardId === card.id;
       })
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, exp) => sum + exp.amount, 0);
     return { name: card.title, amount: total };
   }).filter(d => d.amount > 0);
 
@@ -161,13 +161,13 @@ export default function VisualizePage() {
           )}
         </ChartCard>
 
-        {/* Month Card Payment Pie Chart */}
-        <ChartCard title="Payments by Card (This Month)">
-          {monthlyCardPaymentData.length > 0 ? (
+        {/* Month Card Spending Pie Chart */}
+        <ChartCard title="Spending by Card (This Month)">
+          {monthlyCardSpendingData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={monthlyCardPaymentData}
+                  data={monthlyCardSpendingData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -175,7 +175,7 @@ export default function VisualizePage() {
                   fill="#8884d8"
                   dataKey="amount"
                 >
-                  {monthlyCardPaymentData.map((_, index) => (
+                  {monthlyCardSpendingData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -188,13 +188,13 @@ export default function VisualizePage() {
           )}
         </ChartCard>
 
-        {/* Year Card Payment Pie Chart */}
-        <ChartCard title="Payments by Card (This Year)">
-          {yearlyCardPaymentData.length > 0 ? (
+        {/* Year Card Spending Pie Chart */}
+        <ChartCard title="Spending by Card (This Year)">
+          {yearlyCardSpendingData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={yearlyCardPaymentData}
+                  data={yearlyCardSpendingData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -202,7 +202,7 @@ export default function VisualizePage() {
                   fill="#8884d8"
                   dataKey="amount"
                 >
-                  {yearlyCardPaymentData.map((_, index) => (
+                  {yearlyCardSpendingData.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>

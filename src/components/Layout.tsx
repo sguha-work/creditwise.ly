@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X, LayoutDashboard, Tags, ChartPie } from 'lucide-react';
+import { CreditCard, Receipt, HandCoins, Info, ChevronDown, ChevronUp, Menu, X, LayoutDashboard, Tags, ChartPie, FileSpreadsheet } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState, useEffect } from 'react';
@@ -178,6 +178,19 @@ export default function Layout() {
           >
             <ChartPie className="w-5 h-5" />
             Visualize
+          </Link>
+          
+          <Link
+            to="/export"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
+              location.pathname === '/export'
+                ? 'bg-slate-800 text-white font-medium'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            )}
+          >
+            <FileSpreadsheet className="w-5 h-5" />
+            Export Data
           </Link>
 
         </nav>
